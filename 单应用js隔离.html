@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>js沙箱隔离</title>
+</head>
+<body>
+    <script>
+        class SnapshotSandbox{
+            constructor(){
+                this.proxy = window
+                this.modifyProps = {}
+                this.snapshot = {}
+                this.active()
+            }
+            active(){
+                for(const prop in window){
+                    this.snapshot[prop] = window[prop]
+                }
+                Object.keys(this.modifyProps).forEach(p=>{
+                    window[p] = this.modifyProps[p]
+                })
+            }
+            inactive(){
+                for(const prop in window){
+                    if(this.snapshot[prop] !== window[prop]){
+                        this.modifyProps[prop] = window[prop]
+                        window[prop] = this.snapshot[prop]
+                    }
+                }
+            }
+        }
+        let sandbox = new SnapshotSandbox()
+        function start(window){
+            window.a = 1,window.b = 2
+            console.log(window.a,window.b)
+            sandbox.inactive()
+            console.log(window.a,window.b)
+            sandbox.active()
+            console.log(window.a,window.b)
+        }
+       start(sandbox.proxy)
+    </script>
+</body>
+</html>

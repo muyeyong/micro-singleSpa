@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多应用JS隔离</title>
+</head>
+<body>
+    <script>
+        class ProxySandbox{
+            constructor(){
+                const rawWindow = window
+                const fakeWindow = {}
+                const proxy = new Proxy(fakeWindow,{
+                    set(target, p ,value){
+                        target[p] = value
+                        return true
+                    },
+                    get(target, p){
+                        return target[p] || rawWindow[p]
+                    }
+                })
+                this.proxy = proxy
+            }
+        }
+        let sandbox1 = new ProxySandbox()
+        let sandbox2 = new ProxySandbox()
+        window.a = 1
+        function start(window,value){
+            window.a = value
+            console.log(window.a)
+        }
+     start(sandbox1.proxy,'hello sandbox1')
+    start(sandbox2.proxy,'hello sandbox2')
+    </script>
+</body>
+</html>
